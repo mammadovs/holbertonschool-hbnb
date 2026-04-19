@@ -45,6 +45,7 @@ classDiagram
     HBnBFacade --> BusinessLogicLayer : Orchestrates Logic
     HBnBFacade --> PersistenceLayer : Data Persistence
 
+
 classDiagram
     class BaseModel {
         <<Abstract>>
