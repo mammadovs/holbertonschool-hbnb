@@ -99,3 +99,76 @@ classDiagram
     Place "1" --> "0..*" Review : receives
     Place "*" --> "*" Amenity : includes
 ```
+
+
+## 3. API Interaction Flows (Sequence Diagrams)
+
+To visualize how these layers actually work in practice, I have mapped out the interaction flows for four key API operations. These diagrams show the step-by-step communication between the Client, the API, the Business Logic (via the Facade), and the Persistence layer.
+
+### 3.1. User Registration
+When a new user signs up, the system must validate the input and ensure the email is unique before committing the new entity to storage.
+
+```mermaid
+sequenceDiagram
+    participant Client
+    participant API as Presentation Layer
+    participant Facade as Business Logic (Facade)
+    participant DB as Persistence Layer
+
+    Client->>API: POST /users (Registration Data)
+    API->>Facade: register_user(data)
+    Facade->>Facade: Validate data & email uniqueness
+    Facade->>DB: save(User)
+    DB-->>Facade: Success
+    Facade-->>API: User Object
+    API-->>Client: 201 Created
+```
+
+```mermaid
+sequenceDiagram
+    participant Client
+    participant API as Presentation Layer
+    participant Facade as Business Logic (Facade)
+    participant DB as Persistence Layer
+
+    Client->>API: POST /places (Place Data)
+    API->>Facade: create_place(data)
+    Facade->>Facade: Verify Host permissions
+    Facade->>DB: save(Place)
+    DB-->>Facade: Success
+    Facade-->>API: Place Object
+    API-->>Client: 201 Created
+```
+
+```mermaid
+sequenceDiagram
+    participant Client
+    participant API as Presentation Layer
+    participant Facade as Business Logic (Facade)
+    participant DB as Persistence Layer
+
+    Client->>API: POST /reviews (Review Data)
+    API->>Facade: submit_review(data)
+    Facade->>DB: Verify User and Place existence
+    DB-->>Facade: Verified
+    Facade->>Facade: Validate Rating (1-5)
+    Facade->>DB: save(Review)
+    DB-->>Facade: Success
+    Facade-->>API: Review Object
+    API-->>Client: 201 Created
+```
+
+```mermaid
+sequenceDiagram
+    participant Client
+    participant API as Presentation Layer
+    participant Facade as Business Logic (Facade)
+    participant DB as Persistence Layer
+
+    Client->>API: GET /places (Filters/Criteria)
+    API->>Facade: get_places(criteria)
+    Facade->>DB: find_all(criteria)
+    DB-->>Facade: List of Places
+    Facade-->>API: Formatted JSON List
+    API-->>Client: 200 OK
+```
