@@ -44,8 +44,9 @@ classDiagram
     PresentationLayer --> HBnBFacade : API Requests
     HBnBFacade --> BusinessLogicLayer : Orchestrates Logic
     HBnBFacade --> PersistenceLayer : Data Persistence
+```
 
-
+```mermaid
 classDiagram
     class BaseModel {
         <<Abstract>>
@@ -97,4 +98,4 @@ classDiagram
     User "1" --> "0..*" Review : writes
     Place "1" --> "0..*" Review : receives
     Place "*" --> "*" Amenity : includes
-
+```
