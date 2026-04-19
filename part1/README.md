@@ -1,31 +1,45 @@
-# HBnB Application - High-Level Package Diagram
+# HBnB Evolution - Technical Documentation
 
-## 1. Package Diagram
+## Introduction
+This documentation provides a high-level architectural overview of the HBnB application. The project is designed using a layered architecture to ensure modularity, maintainability, and a clear separation of concerns between user interaction, business logic, and data storage.
 
-The following diagram illustrates the three-layer architecture of the HBnB application. It highlights the separation of concerns and the use of the Facade pattern to streamline communication between the layers.
+## 1. High-Level Package Diagram
+
+The diagram below illustrates the three-layer architecture of the HBnB application and the communication between these layers via the **Facade Pattern**.
 
 ```mermaid
 classDiagram
-    class Presentation_Layer {
-        <<Interface>>
+    direction TB
+
+    class PresentationLayer {
+        <<Package>>
+        +Services
         +API_Endpoints
-        +Service_Controllers
-        note: Handles HTTP requests/responses
-    }
-    class Business_Logic_Layer {
-        +HBnB_Facade
-        +User_Model
-        +Place_Model
-        +Review_Model
-        +Amenity_Model
-        note: Contains core business logic
-    }
-    class Persistence_Layer {
-        +Data_Repository
-        +Storage_Engine
-        note: Handles DB operations
     }
 
-    Presentation_Layer --> Business_Logic_Layer : "Calls via Facade"
-    Business_Logic_Layer --> Persistence_Layer : "Database CRUD operations"
+    class HBnBFacade {
+        <<Facade Interface>>
+        +create_user()
+        +create_place()
+        +submit_review()
+        +manage_amenities()
+    }
+
+    class BusinessLogicLayer {
+        <<Package>>
+        +UserModel
+        +PlaceModel
+        +ReviewModel
+        +AmenityModel
+    }
+
+    class PersistenceLayer {
+        <<Package>>
+        +DatabaseAccessObjects
+        +DataStorage
+    }
+
+    PresentationLayer --> HBnBFacade : API Requests / Input
+    HBnBFacade --> BusinessLogicLayer : Manages Business Rules
+    HBnBFacade --> PersistenceLayer : Data Storage / Retrieval
 
