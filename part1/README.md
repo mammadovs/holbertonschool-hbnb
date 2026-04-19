@@ -1,15 +1,18 @@
-# HBnB Evolution: Technical Design Document
+# HBnB Evolution: Complete Technical Blueprint
 
 ## Introduction
-This document serves as the architectural foundation for the HBnB project. My goal here is to map out how the system components interact and how the data is structured within the core business logic. I've adopted a layered approach to ensure the code stays clean, maintainable, and easy to scale as we add more features.
+Welcome to the technical design documentation for the **HBnB Evolution** project. This document serves as a comprehensive guide for the development team, outlining the system's architecture, core business logic, and interaction patterns. 
+
+Our goal is to build a scalable, Airbnb-like platform where users can manage properties, post reviews, and discover amenities. To ensure long-term maintainability, this blueprint follows a strict layered architecture, keeping the "how" (technical details) separate from the "what" (business value).
 
 ---
 
-## 1. High-Level Architecture (Package Diagram)
+## 1. High-Level System Architecture
 
-For the overall structure, I decided to use a **three-layer architecture**. This helps in keeping the user interface (API) separate from the actual "brain" of the app and the database storage logic.
+To handle the complexity of the HBnB ecosystem, I have adopted a **Three-Layer Architecture**. This design ensures that each part of the system has a single responsibility.
 
-To keep these layers from becoming a tangled mess, I implemented the **Facade Pattern**. Instead of the API talking to every single model or repository, it goes through a single entry point—the Facade. This simplifies the workflow and keeps the layers decoupled.
+### Architectural Diagram
+The following package diagram shows the three main layers and how they interact through a central gateway.
 
 ```mermaid
 classDiagram
@@ -17,33 +20,30 @@ classDiagram
 
     class PresentationLayer {
         <<Layer>>
-        +API_Endpoints
-        +Service_Controllers
+        +REST_API
+        +Controllers
     }
 
     class HBnBFacade {
         <<Interface>>
-        +create_user()
-        +register_place()
-        +post_review()
-        +add_amenity()
+        +Unified_Entry_Point
     }
 
     class BusinessLogicLayer {
         <<Layer>>
         +Domain_Models
-        +Internal_Validation
+        +Business_Rules
     }
 
     class PersistenceLayer {
         <<Layer>>
-        +Database_Operations
-        +Data_Repositories
+        +Database_Access
+        +File_Storage
     }
 
-    PresentationLayer --> HBnBFacade : API Requests
-    HBnBFacade --> BusinessLogicLayer : Orchestrates Logic
-    HBnBFacade --> PersistenceLayer : Data Persistence
+    PresentationLayer --> HBnBFacade : API Calls
+    HBnBFacade --> BusinessLogicLayer : Validation & Logic
+    HBnBFacade --> PersistenceLayer : Data Storage
 ```
 
 ```mermaid
@@ -54,121 +54,98 @@ classDiagram
         +DateTime created_at
         +DateTime updated_at
         +save()
-        +update(data)
+        +update()
     }
 
     class User {
-        +String first_name
-        +String last_name
         +String email
         +String password
         +Boolean is_admin
         +register()
-        +update_profile()
     }
 
     class Place {
         +String title
-        +String description
         +Float price
         +Float latitude
         +Float longitude
-        +create_place()
-        +list_all()
     }
 
     class Review {
         +Integer rating
         +String comment
-        +post_review()
     }
 
     class Amenity {
         +String name
-        +String description
-        +list_amenities()
     }
 
-    BaseModel <|-- User : Generalization
-    BaseModel <|-- Place : Generalization
-    BaseModel <|-- Review : Generalization
-    BaseModel <|-- Amenity : Generalization
+    BaseModel <|-- User
+    BaseModel <|-- Place
+    BaseModel <|-- Review
+    BaseModel <|-- Amenity
 
     User "1" --> "0..*" Place : hosts
     User "1" --> "0..*" Review : writes
     Place "1" --> "0..*" Review : receives
-    Place "*" --> "*" Amenity : includes
-```
-
-
-## 3. API Interaction Flows (Sequence Diagrams)
-
-To visualize how these layers actually work in practice, I have mapped out the interaction flows for four key API operations. These diagrams show the step-by-step communication between the Client, the API, the Business Logic (via the Facade), and the Persistence layer.
-
-### 3.1. User Registration
-When a new user signs up, the system must validate the input and ensure the email is unique before committing the new entity to storage.
-
-```mermaid
-sequenceDiagram
-    participant Client
-    participant API as Presentation Layer
-    participant Facade as Business Logic (Facade)
-    participant DB as Persistence Layer
-
-    Client->>API: POST /users (Registration Data)
-    API->>Facade: register_user(data)
-    Facade->>Facade: Validate data & email uniqueness
-    Facade->>DB: save(User)
-    DB-->>Facade: Success
-    Facade-->>API: User Object
-    API-->>Client: 201 Created
+    Place "*" --> "*" Amenity : features
 ```
 
 ```mermaid
 sequenceDiagram
-    participant Client
-    participant API as Presentation Layer
-    participant Facade as Business Logic (Facade)
-    participant DB as Persistence Layer
-
-    Client->>API: POST /places (Place Data)
-    API->>Facade: create_place(data)
-    Facade->>Facade: Verify Host permissions
-    Facade->>DB: save(Place)
-    DB-->>Facade: Success
-    Facade-->>API: Place Object
-    API-->>Client: 201 Created
+    participant C as Client
+    participant A as API
+    participant F as Facade
+    participant D as DB
+    C->>A: POST /users
+    A->>F: register_user(data)
+    F->>F: Validate Unique Email
+    F->>D: save(User)
+    D-->>F: Success
+    F-->>A: User Object
+    A-->>C: 201 Created
 ```
 
 ```mermaid
 sequenceDiagram
-    participant Client
-    participant API as Presentation Layer
-    participant Facade as Business Logic (Facade)
-    participant DB as Persistence Layer
-
-    Client->>API: POST /reviews (Review Data)
-    API->>Facade: submit_review(data)
-    Facade->>DB: Verify User and Place existence
-    DB-->>Facade: Verified
-    Facade->>Facade: Validate Rating (1-5)
-    Facade->>DB: save(Review)
-    DB-->>Facade: Success
-    Facade-->>API: Review Object
-    API-->>Client: 201 Created
+    participant C as Client
+    participant A as API
+    participant F as Facade
+    participant D as DB
+    C->>A: POST /places
+    A->>F: create_place(data)
+    F->>D: save(Place)
+    D-->>F: Success
+    F-->>A: Place Object
+    A-->>C: 201 Created
 ```
 
 ```mermaid
 sequenceDiagram
-    participant Client
-    participant API as Presentation Layer
-    participant Facade as Business Logic (Facade)
-    participant DB as Persistence Layer
+    participant C as Client
+    participant A as API
+    participant F as Facade
+    participant D as DB
+    C->>A: POST /reviews
+    A->>F: submit_review(data)
+    F->>D: Check User & Place
+    D-->>F: Verified
+    F->>D: save(Review)
+    D-->>F: Success
+    F-->>A: Review Object
+    A-->>C: 201 Created
+```
 
-    Client->>API: GET /places (Filters/Criteria)
-    API->>Facade: get_places(criteria)
-    Facade->>DB: find_all(criteria)
-    DB-->>Facade: List of Places
-    Facade-->>API: Formatted JSON List
-    API-->>Client: 200 OK
+```mermaid
+sequenceDiagram
+    participant C as Client
+    participant A as API
+    participant F as Facade
+    participant D as DB
+    C->>A: GET /places
+    A->>F: get_places(criteria)
+    F->>D: find_all(criteria)
+    D-->>F: Data List
+    F-->>A: JSON Result
+    A-->>C: 200 OK
 ```
