@@ -6,6 +6,7 @@ from app.models.review import Review
 from app.persistence.repository import InMemoryRepository
 
 class HBnBFacade:
+    """Facade class to manage communication between layers"""
     def __init__(self):
         self.user_repo = InMemoryRepository()
         self.amenity_repo = InMemoryRepository()
@@ -47,7 +48,7 @@ class HBnBFacade:
 
     # --- Place Methods ---
     def create_place(self, place_data):
-        # ИСПРАВЛЕНИЕ: Извлекаем ID, чтобы они не попали в конструктор Place
+        """Creates a place and links owner and amenities"""
         owner_id = place_data.pop('owner_id', None)
         amenity_ids = place_data.pop('amenities', [])
         
@@ -76,6 +77,7 @@ class HBnBFacade:
 
     # --- Review Methods ---
     def create_review(self, review_data):
+        """Creates a review linked to a user and a place"""
         user_id = review_data.pop('user_id', None)
         place_id = review_data.pop('place_id', None)
         
@@ -87,10 +89,7 @@ class HBnBFacade:
             
         review = Review(**review_data, user=user, place=place)
         self.review_repo.add(review)
-        
-        # Также добавляем отзыв в список отзывов самого места
-        place.add_review(review)
-        
+        place.add_review(review) # Link review to the place object
         return review
 
     def get_review(self, review_id):
@@ -98,9 +97,3 @@ class HBnBFacade:
 
     def get_all_reviews(self):
         return self.review_repo.get_all()
-
-    def get_reviews_by_place(self, place_id):
-        return [r for r in self.review_repo.get_all() if r.place.id == place_id]
-
-    def update_review(self, review_id, review_data):
-        return self.review_repo.update(review_id, review_data)
