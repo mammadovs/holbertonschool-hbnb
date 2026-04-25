@@ -14,9 +14,33 @@ user_model = api.model('User', {
 class UserList(Resource):
     @api.expect(user_model, validate=True)
     def post(self):
+        """Регистрация нового пользователя"""
         user_data = api.payload
         if facade.get_user_by_email(user_data['email']):
             return {'error': 'Email already registered'}, 400
-
         new_user = facade.create_user(user_data)
-        return {'id': new_user.id, 'first_name': new_user.first_name, 'last_name': new_user.last_name, 'email': new_user.email}, 201
+        return {'id': new_user.id, 'first_name': new_user.first_name, 'email': new_user.email}, 201
+
+    def get(self):
+        """Получение списка всех пользователей"""
+        users = facade.get_all_users()
+        return [{'id': u.id, 'first_name': u.first_name, 'email': u.email} for u in users], 200
+
+@api.route('/<user_id>')
+@api.response(404, 'User not found')
+class UserResource(Resource):
+    def get(self, user_id):
+        """Получение пользователя по ID"""
+        user = facade.get_user(user_id)
+        if not user:
+            return {'error': 'User not found'}, 404
+        return {'id': user.id, 'first_name': user.first_name, 'last_name': user.last_name, 'email': user.email}, 200
+
+    @api.expect(user_model, validate=True)
+    def put(self, user_id):
+        """Обновление данных пользователя"""
+        user_data = api.payload
+        updated_user = facade.update_user(user_id, user_data)
+        if not updated_user:
+            return {'error': 'User not found'}, 404
+        return {'message': 'User updated successfully'}, 200
