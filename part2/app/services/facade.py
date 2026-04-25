@@ -6,7 +6,6 @@ from app.models.review import Review
 from app.persistence.repository import InMemoryRepository
 
 class HBnBFacade:
-    """Facade class to manage communication between layers"""
     def __init__(self):
         self.user_repo = InMemoryRepository()
         self.amenity_repo = InMemoryRepository()
@@ -15,6 +14,8 @@ class HBnBFacade:
 
     # --- User Methods ---
     def create_user(self, user_data):
+        if self.get_user_by_email(user_data.get('email')):
+            raise ValueError("Email already registered")
         user = User(**user_data)
         self.user_repo.add(user)
         return user
@@ -28,9 +29,6 @@ class HBnBFacade:
     def get_all_users(self):
         return self.user_repo.get_all()
 
-    def update_user(self, user_id, user_data):
-        return self.user_repo.update(user_id, user_data)
-
     # --- Amenity Methods ---
     def create_amenity(self, amenity_data):
         amenity = Amenity(**amenity_data)
@@ -43,26 +41,18 @@ class HBnBFacade:
     def get_all_amenities(self):
         return self.amenity_repo.get_all()
 
-    def update_amenity(self, amenity_id, amenity_data):
-        return self.amenity_repo.update(amenity_id, amenity_data)
-
     # --- Place Methods ---
     def create_place(self, place_data):
-        """Creates a place and links owner and amenities"""
         owner_id = place_data.pop('owner_id', None)
         amenity_ids = place_data.pop('amenities', [])
-        
         owner = self.get_user(owner_id)
         if not owner:
             raise ValueError("Owner not found")
-            
         place = Place(**place_data, owner=owner)
-        
-        for amenity_id in amenity_ids:
-            amenity = self.get_amenity(amenity_id)
+        for aid in amenity_ids:
+            amenity = self.get_amenity(aid)
             if amenity:
                 place.add_amenity(amenity)
-                
         self.place_repo.add(place)
         return place
 
@@ -72,15 +62,15 @@ class HBnBFacade:
     def get_all_places(self):
         return self.place_repo.get_all()
 
-    def update_place(self, place_id, place_data):
-        return self.place_repo.update(place_id, place_data)
-
     # --- Review Methods ---
     def create_review(self, review_data):
-        """Creates a review linked to a user and a place"""
+        # VALIDATION: Check rating range
+        rating = review_data.get('rating')
+        if rating is None or not (1 <= rating <= 5):
+            raise ValueError("Rating must be between 1 and 5")
+            
         user_id = review_data.pop('user_id', None)
         place_id = review_data.pop('place_id', None)
-        
         user = self.get_user(user_id)
         place = self.get_place(place_id)
         
@@ -89,7 +79,6 @@ class HBnBFacade:
             
         review = Review(**review_data, user=user, place=place)
         self.review_repo.add(review)
-        place.add_review(review) # Link review to the place object
         return review
 
     def get_review(self, review_id):
