@@ -1,20 +1,23 @@
 #!/usr/bin/python3
 from flask import Flask
 from flask_restx import Api
+from flask_bcrypt import Bcrypt
 from app.services.facade import HBnBFacade
 
+# Instantiate extensions
+bcrypt = Bcrypt()
 facade = HBnBFacade()
 
-# config_class now defaults to the string "config.DevelopmentConfig" as requested
 def create_app(config_class="config.DevelopmentConfig"):
     app = Flask(__name__)
-    
-    # Load configuration from the object
     app.config.from_object(config_class)
+
+    # Initialize Bcrypt with the app instance
+    bcrypt.init_app(app)
 
     api = Api(app, version='1.0', title='HBnB API', description='HBnB Application API')
 
-    # Register all Namespaces
+    # Register Namespaces
     from app.api.v1.users import api as users_ns
     from app.api.v1.amenities import api as amenities_ns
     from app.api.v1.places import api as places_ns
