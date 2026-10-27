@@ -6,7 +6,7 @@ from app import db
 bcrypt = Bcrypt()
 
 class User(BaseModel):
-    """User representation class with SQLAlchemy mapping and password hashing support."""
+    """User representation class with SQLAlchemy mapping and relationships."""
     
     __tablename__ = 'users'
 
@@ -22,14 +22,13 @@ class User(BaseModel):
         self.last_name = last_name
         self.email = email
         self.is_admin = is_admin
-        if password:
-            self.password = self.hash_password(password)
+        self.hash_password(password)
 
     def hash_password(self, password):
-        """Hash the user password using bcrypt."""
-        return bcrypt.generate_password_hash(password).decode('utf-8')
+        """Hashes the password using Bcrypt."""
+        self.password = bcrypt.generate_password_hash(password).decode('utf-8')
 
     def verify_password(self, password):
-        """Verify the provided password against the stored hash."""
+        """Verifies the password against the hashed version."""
         return bcrypt.check_password_hash(self.password, password)
 

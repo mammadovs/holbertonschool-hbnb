@@ -2,8 +2,14 @@
 from app.models.base_model import BaseModel
 from app import db
 
+# Ассоциативная таблица для связи Many-to-Many между Place и Amenity
+place_amenity = db.Table('place_amenity',
+    db.Column('place_id', db.String(36), db.ForeignKey('places.id'), primary_key=True),
+    db.Column('amenity_id', db.String(36), db.ForeignKey('amenities.id'), primary_key=True)
+)
+
 class Place(BaseModel):
-    """Place representation class with SQLAlchemy mapping."""
+    """Place representation class with SQLAlchemy relationships."""
     
     __tablename__ = 'places'
 
@@ -14,7 +20,13 @@ class Place(BaseModel):
     longitude = db.Column(db.Float, nullable=False)
     owner_id = db.Column(db.String(36), db.ForeignKey('users.id'), nullable=False)
 
-    def __init__(self, title, description, price, latitude, longitude, owner_id=None, **kwargs):
+    # SQLAlchemy relationships
+    owner = db.relationship('User', backref=db.backref('places_owned', lazy=True))
+    reviews = db.relationship('Review', backref='place', cascade='all, delete-orphan', lazy=True)
+    amenities = db.relationship('Amenity', secondary=place_amenity, lazy='subquery',
+                                backref=db.backref('places', lazy=True))
+
+    def __init__(self, title, description, price, latitude, longitude, owner_id, **kwargs):
         super().__init__(**kwargs)
         self.validate(title, price, latitude, longitude)
         self.title = title
@@ -22,8 +34,7 @@ class Place(BaseModel):
         self.price = price
         self.latitude = latitude
         self.longitude = longitude
-        if owner_id:
-            self.owner_id = owner_id
+        self.owner_id = owner_id
 
     @staticmethod
     def validate(title, price, latitude, longitude):
