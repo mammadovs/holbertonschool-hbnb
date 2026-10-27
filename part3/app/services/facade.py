@@ -29,6 +29,19 @@ class HBnBFacade:
     def get_all_users(self):
         return self.user_repo.get_all()
 
+    def update_user(self, user_id, user_data):
+        user = self.get_user(user_id)
+        if not user:
+            raise ValueError("User not found")
+        # Запрещаем менять email и password через этот метод (по требованию задания)
+        user_data.pop('email', None)
+        user_data.pop('password', None)
+        
+        for key, value in user_data.items():
+            if hasattr(user, key):
+                setattr(user, key, value)
+        return user
+
     # --- Amenity Methods ---
     def create_amenity(self, amenity_data):
         amenity = Amenity(**amenity_data)
@@ -62,9 +75,24 @@ class HBnBFacade:
     def get_all_places(self):
         return self.place_repo.get_all()
 
+    def update_place(self, place_id, place_data):
+        place = self.get_place(place_id)
+        if not place:
+            raise ValueError("Place not found")
+        for key, value in place_data.items():
+            if hasattr(place, key):
+                setattr(place, key, value)
+        return place
+
+    def delete_place(self, place_id):
+        place = self.get_place(place_id)
+        if not place:
+            raise ValueError("Place not found")
+        self.place_repo.delete(place_id)
+        return True
+
     # --- Review Methods ---
     def create_review(self, review_data):
-        # VALIDATION: Check rating range
         rating = review_data.get('rating')
         if rating is None or not (1 <= rating <= 5):
             raise ValueError("Rating must be between 1 and 5")
@@ -86,3 +114,20 @@ class HBnBFacade:
 
     def get_all_reviews(self):
         return self.review_repo.get_all()
+
+    def update_review(self, review_id, review_data):
+        review = self.get_review(review_id)
+        if not review:
+            raise ValueError("Review not found")
+        for key, value in review_data.items():
+            if hasattr(review, key):
+                setattr(review, key, value)
+        return review
+
+    def delete_review(self, review_id):
+        review = self.get_review(review_id)
+        if not review:
+            raise ValueError("Review not found")
+        self.review_repo.delete(review_id)
+        return True
+
