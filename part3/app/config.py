@@ -4,6 +4,7 @@ import os
 class Config:
     """Base configuration class."""
     SECRET_KEY = os.getenv('SECRET_KEY', 'hbnb_secret_key')
+    JWT_SECRET_KEY = os.getenv('JWT_SECRET_KEY', 'jwt_secret_key_string')
     DEBUG = False
 
 class DevelopmentConfig(Config):
@@ -23,4 +24,3 @@ config = {
     'production': ProductionConfig,
     'default': DevelopmentConfig
 }
-
