@@ -29,14 +29,26 @@ class HBnBFacade:
     def get_all_users(self):
         return self.user_repo.get_all()
 
-    def update_user(self, user_id, user_data):
+    def update_user(self, user_id, user_data, is_admin=False):
         user = self.get_user(user_id)
         if not user:
             raise ValueError("User not found")
-        # Запрещаем менять email и password через этот метод (по требованию задания)
-        user_data.pop('email', None)
-        user_data.pop('password', None)
         
+        # Если обновляет не админ, запрещаем менять email и password
+        if not is_admin:
+            user_data.pop('email', None)
+            user_data.pop('password', None)
+        else:
+            # Если админ меняет email, проверяем на уникальность
+            new_email = user_data.get('email')
+            if new_email and new_email != user.email:
+                if self.get_user_by_email(new_email):
+                    raise ValueError("Email already registered")
+            # Если передан новый пароль, хэшируем его
+            if 'password' in user_data:
+                user.hash_password(user_data['password'])
+                user_data.pop('password', None)
+
         for key, value in user_data.items():
             if hasattr(user, key):
                 setattr(user, key, value)
@@ -53,6 +65,15 @@ class HBnBFacade:
 
     def get_all_amenities(self):
         return self.amenity_repo.get_all()
+
+    def update_amenity(self, amenity_id, amenity_data):
+        amenity = self.get_amenity(amenity_id)
+        if not amenity:
+            raise ValueError("Amenity not found")
+        for key, value in amenity_data.items():
+            if hasattr(amenity, key):
+                setattr(amenity, key, value)
+        return amenity
 
     # --- Place Methods ---
     def create_place(self, place_data):

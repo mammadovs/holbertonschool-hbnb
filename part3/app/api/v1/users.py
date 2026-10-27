@@ -14,7 +14,9 @@ user_model = api.model('User', {
 
 user_update_model = api.model('UserUpdate', {
     'first_name': fields.String(description='First name of the user', example="JohnUpdated"),
-    'last_name': fields.String(description='Last name of the user', example="DoeUpdated")
+    'last_name': fields.String(description='Last name of the user', example="DoeUpdated"),
+    'email': fields.String(description='Email of the user', example="new@example.com"),
+    'password': fields.String(description='Password of the user', example="newpassword")
 })
 
 @api.route('/')
@@ -71,7 +73,6 @@ class UserResource(Resource):
         claims = get_jwt()
         is_admin = claims.get('is_admin', False)
 
-        # Проверка прав: пользователь может менять только свой профиль, либо должен быть админом
         if user_id != current_user_id and not is_admin:
             return {'error': 'Unauthorized action'}, 403
 
@@ -81,7 +82,7 @@ class UserResource(Resource):
 
         update_data = api.payload
         try:
-            updated_user = facade.update_user(user_id, update_data)
+            updated_user = facade.update_user(user_id, update_data, is_admin=is_admin)
             return {
                 'message': 'User updated successfully',
                 'id': updated_user.id,
