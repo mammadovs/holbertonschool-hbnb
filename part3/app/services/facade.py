@@ -3,15 +3,15 @@ from app.models.user import User
 from app.models.amenity import Amenity
 from app.models.place import Place
 from app.models.review import Review
-from app.persistence.repository import InMemoryRepository
 from app.persistence.sqlalchemy_repository import SQLAlchemyRepository
+from app import db
 
 class HBnBFacade:
     def __init__(self):
         self.user_repo = SQLAlchemyRepository(User)
-        self.amenity_repo = InMemoryRepository()
-        self.place_repo = InMemoryRepository()
-        self.review_repo = InMemoryRepository()
+        self.amenity_repo = SQLAlchemyRepository(Amenity)
+        self.place_repo = SQLAlchemyRepository(Place)
+        self.review_repo = SQLAlchemyRepository(Review)
 
     # --- User Methods ---
     def create_user(self, user_data):
@@ -35,17 +35,14 @@ class HBnBFacade:
         if not user:
             raise ValueError("User not found")
         
-        # Если обновляет не админ, запрещаем менять email и password
         if not is_admin:
             user_data.pop('email', None)
             user_data.pop('password', None)
         else:
-            # Если админ меняет email, проверяем на уникальность
             new_email = user_data.get('email')
             if new_email and new_email != user.email:
                 if self.get_user_by_email(new_email):
                     raise ValueError("Email already registered")
-            # Если передан новый пароль, хэшируем его
             if 'password' in user_data:
                 user.hash_password(user_data['password'])
                 user_data.pop('password', None)
@@ -53,12 +50,6 @@ class HBnBFacade:
         for key, value in user_data.items():
             if hasattr(user, key):
                 setattr(user, key, value)
-        # Если используется SQLAlchemy репозиторий, можно вызвать commit или сохранить изменения, 
-        # но в нашем SQLAlchemyRepository обновление вызывается явно через метод update или изменения в объекте.
-        # Давайте вызовем сохранение через репозиторий или сессию, если нужно.
-        # В текущей реализации SQLAlchemyRepository.update принимает (obj_id, data), но здесь мы меняем атрибуты напрямую.
-        # Давайте вызовем update_user через repository или закоммитим сессию:
-        from app import db
         db.session.commit()
         return user
 
@@ -81,20 +72,16 @@ class HBnBFacade:
         for key, value in amenity_data.items():
             if hasattr(amenity, key):
                 setattr(amenity, key, value)
+        db.session.commit()
         return amenity
 
     # --- Place Methods ---
     def create_place(self, place_data):
-        owner_id = place_data.pop('owner_id', None)
-        amenity_ids = place_data.pop('amenities', [])
+        owner_id = place_data.get('owner_id')
         owner = self.get_user(owner_id)
         if not owner:
             raise ValueError("Owner not found")
-        place = Place(**place_data, owner=owner)
-        for aid in amenity_ids:
-            amenity = self.get_amenity(aid)
-            if amenity:
-                place.add_amenity(amenity)
+        place = Place(**place_data)
         self.place_repo.add(place)
         return place
 
@@ -111,6 +98,7 @@ class HBnBFacade:
         for key, value in place_data.items():
             if hasattr(place, key):
                 setattr(place, key, value)
+        db.session.commit()
         return place
 
     def delete_place(self, place_id):
@@ -126,15 +114,15 @@ class HBnBFacade:
         if rating is None or not (1 <= rating <= 5):
             raise ValueError("Rating must be between 1 and 5")
             
-        user_id = review_data.pop('user_id', None)
-        place_id = review_data.pop('place_id', None)
+        user_id = review_data.get('user_id')
+        place_id = review_data.get('place_id')
         user = self.get_user(user_id)
         place = self.get_place(place_id)
         
         if not user or not place:
             raise ValueError("User or Place not found")
             
-        review = Review(**review_data, user=user, place=place)
+        review = Review(**review_data)
         self.review_repo.add(review)
         return review
 
@@ -151,6 +139,7 @@ class HBnBFacade:
         for key, value in review_data.items():
             if hasattr(review, key):
                 setattr(review, key, value)
+        db.session.commit()
         return review
 
     def delete_review(self, review_id):
