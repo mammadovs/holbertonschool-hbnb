@@ -4,10 +4,11 @@ from app.models.amenity import Amenity
 from app.models.place import Place
 from app.models.review import Review
 from app.persistence.repository import InMemoryRepository
+from app.persistence.sqlalchemy_repository import SQLAlchemyRepository
 
 class HBnBFacade:
     def __init__(self):
-        self.user_repo = InMemoryRepository()
+        self.user_repo = SQLAlchemyRepository(User)
         self.amenity_repo = InMemoryRepository()
         self.place_repo = InMemoryRepository()
         self.review_repo = InMemoryRepository()
@@ -52,6 +53,13 @@ class HBnBFacade:
         for key, value in user_data.items():
             if hasattr(user, key):
                 setattr(user, key, value)
+        # Если используется SQLAlchemy репозиторий, можно вызвать commit или сохранить изменения, 
+        # но в нашем SQLAlchemyRepository обновление вызывается явно через метод update или изменения в объекте.
+        # Давайте вызовем сохранение через репозиторий или сессию, если нужно.
+        # В текущей реализации SQLAlchemyRepository.update принимает (obj_id, data), но здесь мы меняем атрибуты напрямую.
+        # Давайте вызовем update_user через repository или закоммитим сессию:
+        from app import db
+        db.session.commit()
         return user
 
     # --- Amenity Methods ---
