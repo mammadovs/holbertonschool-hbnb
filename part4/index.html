@@ -12,7 +12,8 @@
         <img src="logo.png" alt="HBnB Logo" class="logo">
         <nav>
             <a href="index.html">Home</a>
-            <a href="login.html" id="auth-link" class="login-button">Login</a>
+            <a href="login.html" id="login-link" class="login-button">Login</a>
+            <a href="#" id="logout-link" class="login-button" style="display: none;">Logout</a>
         </nav>
     </header>
 
@@ -24,7 +25,20 @@
 
         <section class="places-section">
             <h2>Available Places</h2>
-            <div id="places-container" class="places-grid">
+            
+            <!-- Price Filter Dropdown -->
+            <div class="filter-container">
+                <label for="price-filter">Filter by Max Price:</label>
+                <select id="price-filter">
+                    <option value="All">All</option>
+                    <option value="10">10</option>
+                    <option value="50">50</option>
+                    <option value="100">100</option>
+                </select>
+            </div>
+
+            <!-- Places List Container -->
+            <div id="places-list" class="places-grid">
                 <!-- Places cards will be loaded here dynamically by script.js -->
                 <p>Loading places...</p>
             </div>
@@ -36,22 +50,6 @@
     </footer>
 
     <script src="script.js"></script>
-    <script>
-        // Simple helper to change Login link to Logout if token exists
-        window.addEventListener('DOMContentLoaded', () => {
-            const token = document.cookie.split('; ').find(row => row.startsWith('token='));
-            const authLink = document.getElementById('auth-link');
-            if (token && authLink) {
-                authLink.textContent = 'Logout';
-                authLink.href = '#';
-                authLink.addEventListener('click', (e) => {
-                    e.preventDefault();
-                    document.cookie = 'token=; path=/; max-age=0';
-                    window.location.reload();
-                });
-            }
-        });
-    </script>
 </body>
 </html>
 
