@@ -1,0 +1,143 @@
+/* General Reset & Body Styles */
+body {
+    font-family: Arial, sans-serif;
+    margin: 0;
+    padding: 0;
+    background-color: #f9f9f9;
+    color: #333;
+    display: flex;
+    flex-direction: column;
+    min-height: 100vh;
+}
+
+header {
+    background-color: #ff385c;
+    color: white;
+    padding: 15px 30px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.logo {
+    height: 40px;
+}
+
+nav a {
+    color: white;
+    text-decoration: none;
+    margin-left: 20px;
+    font-weight: bold;
+}
+
+.login-button {
+    background-color: white;
+    color: #ff385c;
+    padding: 8px 15px;
+    border-radius: 5px;
+}
+
+main {
+    flex: 1;
+    max-width: 1200px;
+    margin: 20px auto;
+    padding: 0 20px;
+    width: 100%;
+    box-sizing: border-box;
+}
+
+.hero {
+    text-align: center;
+    margin-bottom: 30px;
+}
+
+/* Places Grid & Cards */
+.places-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+    gap: 20px;
+}
+
+.place-card {
+    background: white;
+    border: 1px solid #ddd;
+    border-radius: 10px;
+    padding: 10px;
+    margin: 20px 0; /* Требование задания: margin 20px */
+    box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+}
+
+.details-button {
+    display: inline-block;
+    background-color: #ff385c;
+    color: white;
+    padding: 8px 12px;
+    text-decoration: none;
+    border-radius: 5px;
+    margin-top: 10px;
+}
+
+/* Place Details & Reviews */
+.place-details {
+    background: white;
+    border: 1px solid #ddd;
+    border-radius: 10px;
+    padding: 20px;
+    margin-bottom: 20px;
+}
+
+.review-card {
+    background: white;
+    border: 1px solid #ddd;
+    border-radius: 10px;
+    padding: 10px;
+    margin: 20px 0;
+}
+
+/* Forms */
+.form-container {
+    max-width: 400px;
+    margin: 40px auto;
+    background: white;
+    padding: 30px;
+    border-radius: 10px;
+    border: 1px solid #ddd;
+}
+
+.form-group {
+    margin-bottom: 15px;
+}
+
+.form-group label {
+    display: block;
+    margin-bottom: 5px;
+    font-weight: bold;
+}
+
+.form-group input, .form-group textarea {
+    width: 100%;
+    padding: 8px;
+    border: 1px solid #ccc;
+    border-radius: 5px;
+    box-sizing: border-box;
+}
+
+button[type="submit"], .submit-button {
+    background-color: #ff385c;
+    color: white;
+    border: none;
+    padding: 10px 15px;
+    width: 100%;
+    border-radius: 5px;
+    cursor: pointer;
+    font-weight: bold;
+}
+
+footer {
+    text-align: center;
+    padding: 20px;
+    background-color: #333;
+    color: white;
+    margin-top: auto;
+}
+

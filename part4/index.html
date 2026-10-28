@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>HBnB - Home</title>
+    <link rel="stylesheet" href="styles.css">
+    <link rel="icon" href="icon.png">
+</head>
+<body>
+    <header>
+        <img src="logo.png" alt="HBnB Logo" class="logo">
+        <nav>
+            <a href="index.html">Home</a>
+            <a href="login.html" id="auth-link" class="login-button">Login</a>
+        </nav>
+    </header>
+
+    <main>
+        <section class="hero">
+            <h1>Welcome to HBnB</h1>
+            <p>Find places to stay, explore unique locations, and share your experiences.</p>
+        </section>
+
+        <section class="places-section">
+            <h2>Available Places</h2>
+            <div id="places-container" class="places-grid">
+                <!-- Places cards will be loaded here dynamically by script.js -->
+                <p>Loading places...</p>
+            </div>
+        </section>
+    </main>
+
+    <footer>
+        <p>&copy; 2026 HBnB. All rights reserved.</p>
+    </footer>
+
+    <script src="script.js"></script>
+    <script>
+        // Simple helper to change Login link to Logout if token exists
+        window.addEventListener('DOMContentLoaded', () => {
+            const token = document.cookie.split('; ').find(row => row.startsWith('token='));
+            const authLink = document.getElementById('auth-link');
+            if (token && authLink) {
+                authLink.textContent = 'Logout';
+                authLink.href = '#';
+                authLink.addEventListener('click', (e) => {
+                    e.preventDefault();
+                    document.cookie = 'token=; path=/; max-age=0';
+                    window.location.reload();
+                });
+            }
+        });
+    </script>
+</body>
+</html>
+
